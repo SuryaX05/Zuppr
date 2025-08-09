@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grado - Grade Up Your Hunger</title>
+    <!-- Google Identity Services (replace CLIENT_ID placeholder with your OAuth 2.0 Client ID) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box }
+        body { font-family: 'Arial', sans-serif; line-height:1.6; color:#333; overflow-x:hidden; background:#fff }
+        .header { background: linear-gradient(135deg,#FF6B35,#DC2626); padding:1rem 0; position:fixed; width:100%; top:0; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+        .nav-container{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding:0 1.25rem}
+        .logo{font-size:1.6rem;font-weight:800;color:white;text-decoration:none}
+        .nav-links{display:flex;gap:1rem;align-items:center}
+        .nav-links a{color:white;text-decoration:none;font-weight:600}
+        .cart-icon{position:relative;background:rgba(255,255,255,0.15);padding:.6rem;border-radius:50%;cursor:pointer}
+        .cart-count{position:absolute;top:-8px;right:-8px;background:#DC2626;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+        .login-btn{background:white;color:#FF6B35;padding:.4rem .9rem;border-radius:20px;font-weight:700;cursor:pointer;border:none}
+        .page-section{display:none;min-height:100vh;padding-top:80px}
+        .page-section.active{display:block}
+        .hero{background: linear-gradient(135deg,#FF6B35,#DC2626,#F59E0B);padding:120px 1rem 60px;text-align:center;color:white;position:relative;overflow:hidden}
+        .hero-content{max-width:900px;margin:0 auto}
+        .hero h1{font-size:2.6rem;margin-bottom:.5rem}
+        .hero p{font-size:1.05rem;margin-bottom:1rem}
+        .cta-button{background:white;color:#FF6B35;padding:.8rem 2rem;border-radius:50px;border:none;font-weight:800;cursor:pointer}
+        .search-section{padding:2rem 1rem;background:#f8f9fa;text-align:center}
+        .search-input{width:100%;padding:1rem;border:2px solid #ddd;border-radius:50px;font-size:1rem}
+        .featured-restaurant{padding:2rem 1rem;max-width:1200px;margin:0 auto}
+        .section-title{text-align:center;font-size:1.6rem;font-weight:800;color:#333;margin-bottom:1rem}
+        .restaurant-featured{background:white;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;gap:1rem;align-items:center;padding:1rem;box-shadow:0 6px 20px rgba(0,0,0,0.07)}
+        .restaurant-image-featured{flex:0 0 140px;height:100px;background:linear-gradient(45deg,#FF6B35,#DC2626);display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;border-radius:8px}
+        .menu-categories{display:grid;gap:1rem;max-width:1200px;margin:1rem auto}
+        .category-section{background:white;border-radius:12px;padding:1rem;box-shadow:0 6px 20px rgba(0,0,0,0.05)}
+        .category-title{font-size:1.2rem;font-weight:800;color:#333;border-bottom:3px solid #FF6B35;padding-bottom:.5rem;margin-bottom:.5rem}
+        .menu-items{display:grid;gap:.7rem}
+        .menu-item{display:flex;justify-content:space-between;align-items:center;padding:.8rem;border-radius:10px;background:#fafafa}
+        .add-to-cart{background:linear-gradient(135deg,#FF6B35,#DC2626);color:white;border:none;padding:.5rem .9rem;border-radius:20px;cursor:pointer;font-weight:700}
+        .cart-sidebar{position:fixed;right:-420px;top:0;width:420px;height:100vh;background:#fff;box-shadow:-2px 0 12px rgba(0,0,0,0.12);transition:right .28s ease;z-index:2000;overflow-y:auto}
+        .cart-sidebar.open{right:0}
+        .cart-header{background:linear-gradient(135deg,#FF6B35,#DC2626);color:#fff;padding:1.25rem;text-align:center}
+        .cart-items{padding:1rem}
+        .qty-btn{background:#FF6B35;color:#fff;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer}
+        .checkout-btn{width:100%;background:linear-gradient(135deg,#FF6B35,#DC2626);color:#fff;border:none;padding:1rem;border-radius:10px;cursor:pointer}
+        .checkout-page{max-width:900px;margin:0 auto;padding:1rem}
+        .checkout-section{background:#fff;border-radius:10px;padding:1rem;margin-bottom:1rem;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
+        .tracking-page{max-width:700px;margin:0 auto;padding:1rem}
+        .progress-bar{display:flex;justify-content:space-between;align-items:center;margin:1.25rem 0;position:relative}
+        .progress-bar::before{content:'';position:absolute;top:50%;left:0;right:0;height:4px;background:#eee;z-index:1}
+        .progress-fill{position:absolute;top:50%;left:0;height:4px;background:linear-gradient(135deg,#FF6B35,#DC2626);z-index:2;transition:width .6s ease}
+        .progress-step{background:#fff;border:4px solid #eee;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:3}
+        .progress-step.completed{border-color:#FF6B35;background:#FF6B35;color:#fff}
+        .modal{display:none;position:fixed;z-index:3000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.45)}
+        .modal-content{background:#fff;margin:6% auto;padding:1rem;border-radius:12px;width:95%;max-width:540px}
+        .close{float:right;font-size:20px;cursor:pointer}
+        .form-group{margin-bottom:1rem}
+        .form-group input, .form-group textarea{width:100%;padding:.8rem;border-radius:8px;border:1px solid #ddd}
+        .reviews-section{max-width:900px;margin:1rem auto;padding:1rem}
+        .review-card{background:#fff;padding:.9rem;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.04);margin-bottom:.8rem}
+        .upload-preview{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+        .upload-preview img{width:80px;height:60px;object-fit:cover;border-radius:6px}
+        .admin-panel{max-width:900px;margin:1rem auto;padding:1rem}
+        .small{font-size:.85rem;color:#666}
+        @media (max-width:768px){.nav-links a:not(.cart-icon):not(.login-btn){display:none}.hero{padding:100px 1rem}.hero h1{font-size:1.9rem}.restaurant-featured{flex-direction:column;align-items:flex-start}.restaurant-image-featured{width:100%;height:140px}}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showPage('home')">🍕 Grado</a>
+            <nav class="nav-links">
+                <a href="#" onclick="showPage('home')">Home</a>
+                <a href="#" onclick="showPage('tracking')">Track Order</a>
+                <div class="cart-icon" onclick="toggleCart()">🛒<span class="cart-count" id="cart-count">0</span></div>
+                <button id="auth-btn" class="login-btn" onclick="openModal()">Student Login</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Homepage -->
+    <section class="page-section active" id="home">
+        <div class="hero" id="hero">
+            <div class="hero-content">
+                <h1 id="hero-title">Grade Up Your Hunger! 🎓</h1>
+                <p id="hero-sub">Late-night cravings? We've got you covered! Fast delivery exclusively for GITAM University students.</p>
+                <button class="cta-button" onclick="scrollToSearch()">Start Ordering Now</button>
+            </div>
+        </div>
+
+        <div class="search-section" id="search">
+            <div class="search-container" style="max-width:720px;margin:0 auto">
+                <input type="text" class="search-input" id="search-input" placeholder="What's your craving tonight? 🌙">
+                <div style="margin-top:.6rem;text-align:right">
+                    <button class="add-to-cart" id="search-btn">Search</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="featured-restaurant">
+            <h2 class="section-title">Featured Restaurant 🌟</h2>
+            <div class="restaurant-featured" onclick="showPage('vfc-menu')">
+                <div class="restaurant-image-featured" id="featured-image">🍛 VFC</div>
+                <div>
+                    <div class="restaurant-name-featured" style="font-weight:800">VFC - Vizag Food Corner</div>
+                    <div style="display:flex;gap:1rem;margin-top:.4rem;align-items:center">
+                        <div style="background:#fff;padding:.3rem .6rem;border-radius:10px;font-weight:700;color:#FF6B35">4.4 ⭐</div>
+                        <div class="small">25 mins</div>
+                        <div class="small">₹150 for two</div>
+                    </div>
+                    <div style="margin-top:.6rem;color:#333">📍 Near GITAM University Campus</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VFC Menu Page -->
+    <section class="page-section vfc-menu" id="vfc-menu">
+        <button class="add-to-cart" style="margin:1rem" onclick="showPage('home')">← Back to Home</button>
+        <div class="menu-header" style="max-width:1200px;margin:0 auto;padding:1rem">
+            <h1 style="color:#FF6B35">🍛 VFC - Vizag Food Corner</h1>
+            <p class="small">Authentic flavors for hungry students!</p>
+        </div>
+
+        <div class="menu-categories">
+            <!-- Biryani Section -->
+            <div class="category-section">
+                <h2 class="category-title">🍛 Biryani</h2>
+                <div class="menu-items" id="biryani-list">
+                    <!-- Items injected by JS -->
+                </div>
+            </div>
+
+            <!-- Fried Rice Section -->
+            <div class="category-section">
+                <h2 class="category-title">🍚 Fried Rice</h2>
+                <div class="menu-items" id="rice-list"></div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <h3 style="font-weight:800">Reviews</h3>
+            <p class="small">Share your experience — helps other students pick the best dish.</p>
+            <div style="margin-top:.6rem;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.04)">
+                <div class="form-group">
+                    <label for="review-text">Your review</label>
+                    <textarea id="review-text" rows="3" placeholder="What did you like? Any tips?" ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="review-rating">Rating</label>
+                    <select id="review-rating">
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="3">3 - Good</option>
+                        <option value="2">2 - Okay</option>
+                        <option value="1">1 - Bad</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="review-images">Add images (optional)</label>
+                    <input type="file" id="review-images" accept="image/*" multiple>
+                    <div class="upload-preview" id="review-preview"></div>
+                </div>
+                <div style="text-align:right">
+                    <button class="add-to-cart" id="post-review">Post Review</button>
+                </div>
+            </div>
+
+            <div id="reviews-list" style="margin-top:1rem"></div>
+        </div>
+    </section>
+
+    <!-- Checkout Page -->
+    <section class="page-section" id="checkout">
+        <div class="checkout-page">
+            <button class="add-to-cart" onclick="showPage('vfc-menu')">← Back to Menu</button>
+            <div class="checkout-section">
+                <h2>🛒 Your Order</h2>
+                <div id="checkout-items"></div>
+                <div class="cart-total" style="margin-top:.8rem">Total: ₹<span id="checkout-total">0</span></div>
+            </div>
+
+            <div class="checkout-section">
+                <h3>📍 Delivery Address</h3>
+                <div class="form-group">
+                    <label>Hostel Block & Room</label>
+                    <input type="text" id="delivery-address" placeholder="e.g., Block A, Room 201">
+                </div>
+            </div>
+
+            <div class="checkout-section">
+                <h3>💳 Payment Options</h3>
+                <div class="form-group">
+                    <label><input type="radio" name="payment" value="upi"> UPI Payment</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="radio" name="payment" value="cod"> Cash on Delivery</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="radio" name="payment" value="wallet"> Campus Wallet</label>
+                </div>
+                <div style="text-align:right">
+                    <button class="checkout-btn" onclick="placeOrder()">Place Order 🚀</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Tracking Page -->
+    <section class="page-section" id="tracking">
+        <div class="tracking-page">
+            <button class="add-to-cart" onclick="showPage('home')">← Back to Home</button>
+            <div class="checkout-section">
+                <h2>🚚 Track Your Order</h2>
+                <p><strong>Order ID:</strong> <span id="track-order-id">#GRD00000</span></p>
+                <p><strong>Restaurant:</strong> <span id="track-restaurant">VFC - Vizag Food Corner</span></p>
+                <p><strong>Estimated Delivery:</strong> 25-30 mins</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+                <div class="progress-step" id="step-1">🍳</div>
+                <div class="progress-step" id="step-2">🏍️</div>
+                <div class="progress-step" id="step-3">🏠</div>
+            </div>
+
+            <div class="checkout-section" style="text-align:center">
+                <h3 id="on-the-way">📦 On the Way to Your Hostel!</h3>
+                <p id="delivery-desc">Your food is being prepared.</p>
+                <p style="color:#FF6B35;font-weight:800" id="eta">Expected in 25-30 minutes</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3>🛒 Your Cart</h3>
+            <button class="cart-close" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <p style="text-align:center;color:#666;padding:2rem">Your cart is empty</p>
+        </div>
+        <div style="padding:1rem;border-top:1px solid #f0f0f0">
+            <div style="margin-bottom:.6rem">Total: ₹<span id="cart-total">0</span></div>
+            <button class="checkout-btn" onclick="proceedToCheckout()" id="proceed-checkout" style="display:none">Proceed to Checkout 🚀</button>
+        </div>
+    </div>
+
+    <!-- Login Modal (uses Google Sign-In) -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 style="color:#FF6B35;margin-bottom:.6rem">Student Login 🎓</h2>
+            <div id="g_id_onload" data-client_id="GOOGLE_CLIENT_ID_REPLACE" data-callback="handleCredentialResponse" data-auto_prompt="false"></div>
+            <div class="g_id_signin" id="googleSignInBtn"></div>
+            <p class="small" style="margin-top:.6rem">Or enter phone & hostel details</p>
+            <div class="form-group">
+                <input type="text" id="hostelId" placeholder="Hostel ID">
+            </div>
+            <div class="form-group">
+                <input type="tel" id="phone" placeholder="Phone Number">
+            </div>
+            <div class="form-group">
+                <input type="text" id="room" placeholder="Room Number">
+            </div>
+            <div style="text-align:right">
+                <button class="add-to-cart" onclick="manualLogin()">Login & Start Ordering</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: Upload banners & dish images (keeps images to localStorage) -->
+    <div class="admin-panel" style="max-width:900px;margin:1rem auto;padding:1rem;border-radius:10px">
+        <h3 style="font-weight:800">Upload banners & dish images (local preview)</h3>
+        <p class="small">You said you'll provide banners/images — upload them here to preview on the site. Images are stored in browser localStorage (for demo). For production, upload to a CDN and update image URLs.</p>
+        <div class="form-group">
+            <label>Hero Banner</label>
+            <input type="file" id="hero-banner" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label>Featured Restaurant Image</label>
+            <input type="file" id="featured-img" accept="image/*">
+        </div>
+    </div>
+
+    <script>
+        /* =========================
+           Application State
+           ========================= */
+        let cart = []; // {name, price, quantity}
+        let cartTotal = 0;
+        let currentUser = null; // {name,email}
+        const sampleMenu = {
+            biryani:[
+                ['Chicken Biryani',150],['Egg Biryani',120],['Veg Biryani',110],['Mutton Biryani',200],['Paneer Biryani',160]
+            ],
+            rice:[['Veg Fried Rice',100],['Egg Fried Rice',110],['Chicken Fried Rice',140],['Schezwan Fried Rice',150],['Prawns Fried Rice',170]]
+        };
+
+        /* =========================
+           Page Navigation
+           ========================= */
+        function showPage(pageId){
+            document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
+            const el = document.getElementById(pageId);
+            if(el) el.classList.add('active');
+            // close cart when navigating
+            document.getElementById('cart-sidebar').classList.remove('open');
+        }
+
+        /* =========================
+           Menu Render
+           ========================= */
+        function renderMenu(){
+            const biryaniList = document.getElementById('biryani-list');
+            const riceList = document.getElementById('rice-list');
+            biryaniList.innerHTML = sampleMenu.biryani.map(item=>menuItemHtml(item[0],item[1])).join('');
+            riceList.innerHTML = sampleMenu.rice.map(item=>menuItemHtml(item[0],item[1])).join('');
+            attachAddButtons();
+        }
+        function menuItemHtml(name,price){
+            return `<div class=\"menu-item\">\n                <div>\n                    <h4 style=\"margin-bottom:.3rem\">${name}</h4>\n                    <div class=\"small\">₹${price}</div>\n                </div>\n                <div>\n                    <button class=\"add-to-cart\" data-name=\"${name}\" data-price=\"${price}\">Add</button>\n                </div>\n            </div>`;
+        }
+
+        function attachAddButtons(){
+            document.querySelectorAll('.menu-item .add-to-cart').forEach(btn=>{
+                btn.addEventListener('click',()=>{
+                    const name = btn.getAttribute('data-name');
+                    const price = Number(btn.getAttribute('data-price'));
+                    addToCart(name,price);
+                    // small feedback
+                    btn.textContent = 'Added ✓';
+                    setTimeout(()=> btn.textContent = 'Add',700);
+                });
+            });
+        }
+
+        /* =========================
+           Cart Functions
+           ========================= */
+        function addToCart(itemName, price){
+            const existing = cart.find(i=>i.name===itemName);
+            if(existing) existing.quantity++;
+            else cart.push({name:itemName,price,quantity:1});
+            updateCartDisplay();
+            showCartAnimation();
+        }
+
+        function updateCartDisplay(){
+            const cartCount = document.getElementById('cart-count');
+            const cartItems = document.getElementById('cart-items');
+            const cartTotalEl = document.getElementById('cart-total');
+            const proceedBtn = document.getElementById('proceed-checkout');
+            const totalItems = cart.reduce((s,i)=>s + i.quantity,0);
+            cartCount.textContent = totalItems;
+            cartTotal = cart.reduce((s,i)=>s + i.price * i.quantity,0);
+            cartTotalEl.textContent = cartTotal;
+            if(cart.length===0){
+                cartItems.innerHTML = '<p style="text-align:center;color:#666;padding:2rem">Your cart is empty</p>';
+                proceedBtn.style.display = 'none';
+            } else {
+                cartItems.innerHTML = cart.map(it=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f0f0f0">\n                    <div><strong>${it.name}</strong><div class=\"small\">₹${it.price}</div></div>\n                    <div style=\"display:flex;gap:.5rem;align-items:center\">\n                        <button class=\"qty-btn\" data-name=\"${it.name}\">-</button>\n                        <div>${it.quantity}</div>\n                        <button class=\"qty-btn\" data-name2=\"${it.name}\">+</button>\n                    </div>\n                </div>`).join('');
+                proceedBtn.style.display = 'block';
+                // attach qty handlers
+                document.querySelectorAll('.qty-btn').forEach(btn=>{
+                    btn.addEventListener('click',(e)=>{
+                        const name = btn.getAttribute('data-name') || btn.getAttribute('data-name2');
+                        const change = btn.getAttribute('data-name') ? -1 : 1;
+                        updateQuantity(name,change);
+                    });
+                });
+            }
+            // update checkout page items
+            updateCheckoutDisplay();
+        }
+
+        function updateQuantity(itemName, change){
+            const item = cart.find(i=>i.name===itemName);
+            if(!item) return;
+            item.quantity += change;
+            if(item.quantity<=0) cart = cart.filter(i=>i.name!==itemName);
+            updateCartDisplay();
+        }
+
+        function toggleCart(){ document.getElementById('cart-sidebar').classList.toggle('open'); }
+
+        function showCartAnimation(){ const cartIcon = document.querySelector('.cart-icon'); cartIcon.style.transform='scale(1.15)'; setTimeout(()=>cartIcon.style.transform='scale(1)',180); }
+
+        function proceedToCheckout(){
+            if(cart.length===0){ alert('Your cart is empty!'); return; }
+            // require login
+            if(!currentUser){ alert('Please login before checkout'); openModal(); return; }
+            toggleCart(); showPage('checkout'); updateCheckoutDisplay();
+        }
+
+        function updateCheckoutDisplay(){
+            const itemsEl = document.getElementById('checkout-items');
+            const totalEl = document.getElementById('checkout-total');
+            itemsEl.innerHTML = cart.map(it=>`<div style="display:flex;justify-content:space-between;padding:.5rem 0">\n                <div><strong>${it.name}</strong><div class=\"small\">₹${it.price} × ${it.quantity}</div></div>\n                <div>₹${it.price * it.quantity}</div>\n            </div>`).join('');
+            totalEl.textContent = cartTotal;
+        }
+
+        /* =========================
+           Order placement & tracking (simulated)
+           ========================= */
+        function placeOrder(){
+            const address = document.getElementById('delivery-address').value.trim();
+            const payment = document.querySelector('input[name=payment]:checked');
+            if(!address){ alert('Please enter delivery address'); return; }
+            if(!payment){ alert('Please select a payment method'); return; }
+            if(!currentUser){ alert('Please login to place order'); openModal(); return; }
+
+            // If payment is UPI or wallet we simulate payment success. For production, swap with real gateway integration.
+            const paymentType = payment.value;
+            if(paymentType === 'upi'){
+                // Simulate UPI flow with a confirmation modal
+                if(!confirm('Proceed to pay ₹' + cartTotal + ' via UPI? (simulation)')) return;
+                // success
+            }
+
+            const orderId = 'GRD' + Math.floor(Math.random()*90000 + 10000);
+            // show tracking
+            document.getElementById('track-order-id').textContent = '#' + orderId;
+            document.getElementById('track-restaurant').textContent = 'VFC - Vizag Food Corner';
+            showPage('tracking');
+            // reset cart
+            cart = []; updateCartDisplay();
+            startOrderTracking(orderId);
+        }
+
+        function startOrderTracking(orderId){
+            const fill = document.getElementById('progress-fill');
+            const s1 = document.getElementById('step-1');
+            const s2 = document.getElementById('step-2');
+            const s3 = document.getElementById('step-3');
+            s1.classList.remove('completed'); s2.classList.remove('completed'); s3.classList.remove('completed');
+            fill.style.width = '0%';
+            setTimeout(()=>{ s1.classList.add('completed'); fill.style.width='33%'; document.getElementById('delivery-desc').textContent='Preparing your food...'; },500);
+            setTimeout(()=>{ s2.classList.add('completed'); fill.style.width='66%'; document.getElementById('delivery-desc').textContent='Out for delivery'; document.getElementById('eta').textContent='Expected in 8-12 minutes'; },3500);
+            setTimeout(()=>{ s3.classList.add('completed'); fill.style.width='100%'; document.getElementById('delivery-desc').textContent='Delivered!'; alert('🎉 Your order has been delivered! Enjoy 🍽️'); },8000);
+        }
+
+        /* =========================
+           Login: Google Sign-In & Manual
+           ========================= */
+        // Replace GOOGLE_CLIENT_ID_REPLACE in the HTML with your real Google OAuth client id.
+        window.handleCredentialResponse = (response) => {
+            // response.credential is a JWT ID token — decode basic info without verification for demo.
+            const payload = parseJwt(response.credential);
+            currentUser = { name: payload.name || payload.email, email: payload.email };
+            onLoginSuccess();
+            closeModal();
+        };
+
+        function parseJwt (token) {
+            try{
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            }catch(e){ return {}; }
+        }
+
+        function manualLogin(){
+            const hostel = document.getElementById('hostelId').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const room = document.getElementById('room').value.trim();
+            if(!hostel || !phone || !room){ alert('Please fill hostel, phone and room'); return; }
+            currentUser = { name: hostel + ' (' + phone.slice(-4) + ')', email: '' };
+            onLoginSuccess(); closeModal();
+        }
+
+        function onLoginSuccess(){
+            document.getElementById('auth-btn').textContent = 'Hi, ' + (currentUser.name.split(' ')[0] || 'Student');
+            document.getElementById('auth-btn').classList.add('small');
+            // store minimal profile
+            localStorage.setItem('grado_user', JSON.stringify(currentUser));
+        }
+
+        function openModal(){ document.getElementById('loginModal').style.display='block'; }
+        function closeModal(){ document.getElementById('loginModal').style.display='none'; }
+        window.onclick = function(e){ if(e.target === document.getElementById('loginModal')) closeModal(); }
+
+        /* =========================
+           Reviews (stored in localStorage)
+           ========================= */
+        function loadReviews(){
+            const reviews = JSON.parse(localStorage.getItem('grado_reviews') || '[]');
+            renderReviews(reviews);
+        }
+        function renderReviews(list){
+            const el = document.getElementById('reviews-list');
+            if(list.length===0){ el.innerHTML='<p class="small">No reviews yet — be the first to review!</p>'; return; }
+            el.innerHTML = list.map(r=>`<div class=\"review-card\">\n                <div style=\"display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem\">\n                    <div><strong>${escapeHtml(r.name || 'Anonymous')}</strong><div class=\"small\">${new Date(r.ts).toLocaleString()}</div></div>\n                    <div style=\"font-weight:800;color:#FF6B35\">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>\n                </div>\n                <div style=\"margin-bottom:.4rem\">${escapeHtml(r.text)}</div>\n                ${r.images && r.images.length ? '<div style=\\"display:flex;gap:.5rem;flex-wrap:wrap\\">' + r.images.map(src=>`<img src=\\"${src}\\" style=\\"width:80px;height:60px;object-fit:cover;border-radius:6px\\">`).join('') + '</div>' : ''}
+            </div>`).join('');
+        }
+
+        document.getElementById('post-review').addEventListener('click',()=>{
+            const text = document.getElementById('review-text').value.trim();
+            const rating = Number(document.getElementById('review-rating').value);
+            const imgs = document.getElementById('review-images').files;
+            if(!text){ alert('Please write a short review'); return; }
+            const readerPromises = [];
+            for(let i=0;i<imgs.length;i++){ readerPromises.push(readFileAsDataURL(imgs[i])); }
+            Promise.all(readerPromises).then(imgData=>{
+                const reviews = JSON.parse(localStorage.getItem('grado_reviews') || '[]');
+                reviews.unshift({ name: currentUser ? currentUser.name : 'Anonymous', text, rating, images:imgData, ts:Date.now() });
+                localStorage.setItem('grado_reviews', JSON.stringify(reviews));
+                renderReviews(reviews);
+                // clear form
+                document.getElementById('review-text').value=''; document.getElementById('review-images').value=''; document.getElementById('review-preview').innerHTML='';
+                alert('Thanks! Your review has been posted.');
+            });
+        });
+
+        function readFileAsDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(); r.readAsDataURL(file); }); }
+
+        // preview images selected for review
+        document.getElementById('review-images').addEventListener('change', (e)=>{
+            const preview = document.getElementById('review-preview'); preview.innerHTML='';
+            const files = e.target.files; for(let i=0;i<files.length;i++){ const file=files[i]; const img=document.createElement('img'); const reader=new FileReader(); reader.onload=(ev)=>{ img.src = ev.target.result; preview.appendChild(img); }; reader.readAsDataURL(file); }
+        });
+
+        /* =========================
+           Upload and show banners (local preview)
+           ========================= */
+        document.getElementById('hero-banner').addEventListener('change', (e)=>{
+            const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{ const data = r.result; localStorage.setItem('grado_hero', data); applyHeroImage(data); }; r.readAsDataURL(f);
+        });
+        document.getElementById('featured-img').addEventListener('change', (e)=>{
+            const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ()=>{ const data = r.result; localStorage.setItem('grado_featured', data); applyFeaturedImage(data); }; r.readAsDataURL(f);
+        });
+        function applyHeroImage(data){ document.getElementById('hero').style.backgroundImage = `url(${data}), linear-gradient(135deg,#FF6B35,#DC2626)`; }
+        function applyFeaturedImage(data){ document.getElementById('featured-image').innerHTML = `<img src="${data}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`; }
+
+        /* =========================
+           Utils & Initialization
+           ========================= */
+        function escapeHtml(s){ return String(s).replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+        function readStorageUser(){ try{ const u=JSON.parse(localStorage.getItem('grado_user')); if(u) currentUser = u; if(currentUser) onLoginSuccess(); }catch(e){} }
+
+        // wire search
+        document.getElementById('search-btn').addEventListener('click',()=>{ const q=document.getElementById('search-input').value.trim(); if(!q) { showPage('vfc-menu'); } else { alert('Searching for "' + q + '" — showing VFC menu (demo)'); showPage('vfc-menu'); } });
+
+        // initial render
+        renderMenu(); updateCartDisplay(); loadReviews(); readStorageUser();
+
+        // load persisted hero/featured images
+        const heroSaved = localStorage.getItem('grado_hero'); if(heroSaved) applyHeroImage(heroSaved);
+        const feat = localStorage.getItem('grado_featured'); if(feat) applyFeaturedImage(feat);
+
+        // prefill demo reviews if none
+        if(!localStorage.getItem('grado_reviews')){
+            localStorage.setItem('grado_reviews', JSON.stringify([{name:'Ravi',text:'Chicken Biryani was awesome! Highly recommend.',rating:5,images:[],ts:Date.now()-1000000}]));
+            loadReviews();
+        }
+
+        /* =========================
+           Small helpers for Google Sign-In button render
+           NOTE: The page includes the Google Identity script, you must replace the data-client_id value in the HTML (GOOGLE_CLIENT_ID_REPLACE) with your real client id.
+           Example client id looks like: 12345-abcdefg.apps.googleusercontent.com
+           ========================= */
+        function renderGoogleButton(){
+            if(window.google && google.accounts && google.accounts.id){
+                google.accounts.id.initialize({ client_id: 'GOOGLE_CLIENT_ID_REPLACE', callback: handleCredentialResponse });
+                google.accounts.id.renderButton(document.getElementById('googleSignInBtn'), { theme:'outline', size:'large' });
+            } else {
+                // will retry later
+                setTimeout(renderGoogleButton,500);
+            }
+        }
+        renderGoogleButton();
+
+    </script>
+
+    <!-- NOTE for production integration -->
+    <!--
+        1) Google Sign-In: Replace GOOGLE_CLIENT_ID_REPLACE with your OAuth 2.0 client id and set Authorized origins in Google Cloud.
+        2) Payment gateway: This example simulates UPI/COD/Wallet. For real payments integrate Razorpay/Stripe/Paytm etc. You will typically call your server to create a payment order/session, then call the gateway SDK on the client.
+        3) Images: For production upload user images to a storage/CDN (S3, Firebase Storage) instead of localStorage.
+        4) Reviews & Orders: Move reviews and orders to a backend DB and protect endpoints. The current version uses localStorage for demo and offline testing.
+    -->
+</body>
+</html>
