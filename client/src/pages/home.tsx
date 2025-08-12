@@ -28,7 +28,7 @@ export default function Home() {
       <div className="gradient-hero text-white text-center py-24 px-4 relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10 slide-up">
           <h1 className="text-5xl md:text-6xl font-black mb-4 drop-shadow-lg" data-testid="hero-title">
-            Grade Up Your Hunger! 🎓
+            Zip Up Your Hunger! 🚀
           </h1>
           <p className="text-xl mb-8 opacity-90" data-testid="hero-subtitle">
             Late-night cravings? We've got you covered! Fast delivery exclusively for GITAM University students.

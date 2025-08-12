@@ -17,6 +17,10 @@ interface AppState {
   toggleCart: () => void;
   getCartTotal: () => number;
   getCartItemCount: () => number;
+  getSubtotal: () => number;
+  getDeliveryFee: () => number;
+  getPlatformFee: () => number;
+  getFinalTotal: () => number;
 
   // User
   user: User | null;
@@ -111,6 +115,22 @@ export const useAppStore = create<AppState>()(
       },
       getCartItemCount: () => {
         return get().cart.reduce((count, item) => count + item.quantity, 0);
+      },
+      getSubtotal: () => {
+        return get().cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+      },
+      getDeliveryFee: () => {
+        const subtotal = get().getSubtotal();
+        return subtotal > 0 ? 20 : 0; // ₹20 delivery fee if cart has items
+      },
+      getPlatformFee: () => {
+        const subtotal = get().getSubtotal();
+        return subtotal > 0 ? 5 : 0; // ₹5 platform fee if cart has items
+      },
+      getFinalTotal: () => {
+        const subtotal = get().getSubtotal();
+        if (subtotal === 0) return 0;
+        return subtotal + get().getDeliveryFee() + get().getPlatformFee();
       },
 
       // User

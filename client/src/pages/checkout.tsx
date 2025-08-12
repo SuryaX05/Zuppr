@@ -4,7 +4,10 @@ import { useAppStore } from '@/lib/store';
 export default function Checkout() {
   const { 
     cart, 
-    getCartTotal, 
+    getSubtotal,
+    getDeliveryFee,
+    getPlatformFee,
+    getFinalTotal,
     setCurrentPage, 
     clearCart, 
     setCurrentOrder,
@@ -15,7 +18,10 @@ export default function Checkout() {
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
 
-  const total = getCartTotal();
+  const subtotal = getSubtotal();
+  const deliveryFee = getDeliveryFee();
+  const platformFee = getPlatformFee();
+  const total = getFinalTotal();
 
   const handlePlaceOrder = () => {
     if (!user) {
@@ -113,8 +119,23 @@ export default function Checkout() {
               ))}
             </div>
             <div className="border-t-2 border-grado-orange pt-4 mt-4">
-              <div className="text-xl font-black text-right" data-testid="checkout-total">
-                Total: ₹{total}
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between" data-testid="checkout-subtotal">
+                  <span>Subtotal:</span>
+                  <span className="font-bold">₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between" data-testid="checkout-delivery-fee">
+                  <span>Delivery Fee:</span>
+                  <span className="font-bold">₹{deliveryFee}</span>
+                </div>
+                <div className="flex justify-between" data-testid="checkout-platform-fee">
+                  <span>Platform Fee:</span>
+                  <span className="font-bold">₹{platformFee}</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between text-xl font-black" data-testid="checkout-total">
+                  <span>Total:</span>
+                  <span>₹{total}</span>
+                </div>
               </div>
             </div>
           </div>

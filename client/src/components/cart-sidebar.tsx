@@ -6,11 +6,17 @@ export default function CartSidebar() {
     isCartOpen, 
     toggleCart, 
     updateQuantity, 
-    getCartTotal,
+    getSubtotal,
+    getDeliveryFee,
+    getPlatformFee,
+    getFinalTotal,
     setCurrentPage 
   } = useAppStore();
 
-  const total = getCartTotal();
+  const subtotal = getSubtotal();
+  const deliveryFee = getDeliveryFee();
+  const platformFee = getPlatformFee();
+  const total = getFinalTotal();
 
   const handleCheckout = () => {
     if (cart.length === 0) {
@@ -100,9 +106,26 @@ export default function CartSidebar() {
         
         {/* Footer */}
         <div className="border-t-2 border-grado-orange p-4">
-          <div className="text-xl font-black text-center mb-4" data-testid="cart-total">
-            Total: ₹{total}
-          </div>
+          {cart.length > 0 && (
+            <div className="space-y-2 mb-4 text-sm">
+              <div className="flex justify-between" data-testid="cart-subtotal">
+                <span>Subtotal:</span>
+                <span>₹{subtotal}</span>
+              </div>
+              <div className="flex justify-between" data-testid="cart-delivery-fee">
+                <span>Delivery Fee:</span>
+                <span>₹{deliveryFee}</span>
+              </div>
+              <div className="flex justify-between" data-testid="cart-platform-fee">
+                <span>Platform Fee:</span>
+                <span>₹{platformFee}</span>
+              </div>
+              <div className="border-t pt-2 flex justify-between font-bold" data-testid="cart-total">
+                <span>Total:</span>
+                <span>₹{total}</span>
+              </div>
+            </div>
+          )}
           <button 
             className="w-full gradient-bg text-white py-3 rounded-lg font-bold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed" 
             onClick={handleCheckout}

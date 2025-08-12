@@ -1,4 +1,5 @@
 import { useAppStore } from '@/lib/store';
+import zupprLogo from '@assets/z (2)_1754992482138.png';
 
 export default function Header() {
   const { 
@@ -16,11 +17,12 @@ export default function Header() {
     <header className="fixed w-full top-0 z-50 gradient-bg shadow-lg" data-testid="header">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         <button 
-          className="text-2xl font-black text-white hover:scale-105 transition-transform" 
+          className="flex items-center gap-2 hover:scale-105 transition-transform" 
           onClick={() => setCurrentPage('home')}
           data-testid="logo-button"
         >
-          🍕 Grado
+          <img src={zupprLogo} alt="Zuppr" className="h-8 w-8" />
+          <span className="text-2xl font-black text-white">Zuppr</span>
         </button>
         <nav className="flex items-center gap-6">
           <button 
