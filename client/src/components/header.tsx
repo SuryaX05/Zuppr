@@ -1,9 +1,7 @@
 import { useAppStore } from '@/lib/store';
-import zupprLogo from '@assets/z (2)_1754992482138.png';
 
 export default function Header() {
   const { 
-    currentPage, 
     setCurrentPage, 
     getCartItemCount, 
     toggleCart,
@@ -21,7 +19,9 @@ export default function Header() {
           onClick={() => setCurrentPage('home')}
           data-testid="logo-button"
         >
-          <img src={zupprLogo} alt="Zuppr" className="h-8 w-8" />
+          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+            <span className="text-grado-orange font-black text-lg">Z</span>
+          </div>
           <span className="text-2xl font-black text-white">Zuppr</span>
         </button>
         <nav className="flex items-center gap-6">
